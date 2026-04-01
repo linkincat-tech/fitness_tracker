@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#FF6B35">
+    <title>运动时间记录</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%23FF6B35' width='192' height='192' rx='30'/%3E%3Ctext x='96' y='125' font-size='100' text-anchor='middle' fill='white'%3E🏃%3C/text%3E%3C/svg%3E">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            background: #f8f9fa;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+            margin: -20px -20px 20px -20px;
+            padding: 30px 20px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header p {
+            opacity: 0.95;
+            font-size: 0.95rem;
+        }
+
+        /* Progress Section */
+        .progress-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .progress-ring-container {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            margin: 0 auto 20px;
+        }
+
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring-bg {
+            fill: none;
+            stroke: #e9ecef;
+            stroke-width: 12;
+        }
+
+        .progress-ring-fill {
+            fill: none;
+            stroke: url(#progressGradient);
+            stroke-width: 12;
+            stroke-linecap: round;
+            stroke-dasharray: 628;
+            stroke-dashoffset: 628;
+            transition: stroke-dashoffset 0.8s ease;
+        }
+
+        .progress-ring-fill.over-goal {
+            stroke: url(#successGradient);
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .progress-minutes {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #FF6B35;
+            line-height: 1;
+        }
+
+        .progress-minutes.over-goal {
+            color: #28a745;
+        }
+
+        .progress-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .progress-goal {
+            font-size: 1rem;
+            color: #495057;
+            margin-top: 10px;
+        }
+
+        .week-range {
+            font-size: 0.85rem;
+            color: #868e96;
+            margin-bottom: 15px;
+        }
+
+        /* Add Button */
+        .add-btn {
+            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+            font-weight: 600;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.5);
+        }
+
+        .add-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Records Section */
+        .records-section {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            color: #495057;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .record-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+            transition: background 0.2s;
+            border-radius: 10px;
+        }
+
+        .record-item:hover {
+            background: #f8f9fa;
+        }
+
+        .record-item:last-child {
+            border-bottom: none;
+        }
+
+        .record-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .record-icon {
+            font-size: 1.5rem;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff3e6;
+            border-radius: 50%;
+        }
+
+        .record-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .record-type {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .record-date {
+            font-size: 0.8rem;
+            color: #868e96;
+        }
+
+        .record-minutes {
+            font-weight: bold;
+            color: #FF6B35;
+            font-size: 1.1rem;
+        }
+
+        .delete-btn {
+            background: #ffebee;
+            color: #c62828;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .record-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .delete-btn:hover {
+            background: #ffcdd2;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #868e96;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        /* Garden Section */
+        .garden-section {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .garden-title {
+            font-size: 1.1rem;
+            color: #2e7d32;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .garden-stats {
+            font-size: 0.85rem;
+            color: #558b2f;
+            margin-bottom: 15px;
+        }
+
+        .garden-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            padding: 10px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 15px;
+        }
+
+        .garden-slot {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: rgba(255,255,255,0.7);
+            border-radius: 10px;
+            transition: transform 0.3s;
+        }
+
+        .garden-slot.flower {
+            animation: bloom 0.5s ease;
+        }
+
+        .garden-slot:hover {
+            transform: scale(1.1);
+        }
+
+        @keyframes bloom {
+            0% { transform: scale(0) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(180deg); }
+            100% { transform: scale(1) rotate(360deg); }
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            width: 90%;
+            max-width: 380px;
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .type-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .type-option {
+            display: none;
+        }
+
+        .type-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .type-label:hover {
+            border-color: #FF6B35;
+        }
+
+        .type-option:checked + .type-label {
+            border-color: #FF6B35;
+            background: #fff3e6;
+        }
+
+        .type-icon {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .type-name {
+            font-size: 0.9rem;
+            color: #495057;
+        }
+
+        .minutes-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+
+        .minutes-input:focus {
+            outline: none;
+            border-color: #FF6B35;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* Celebration */
+        .celebration {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 2000;
+            pointer-events: none;
+        }
+
+        .celebration.active {
+            display: block;
+        }
+
+        .celebration-message {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: popIn 0.5s ease;
+            pointer-events: auto;
+        }
+
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            80% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .celebration-message h2 {
+            color: #28a745;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .celebration-message p {
+            color: #666;
+        }
+
+        .flower {
+            position: absolute;
+            font-size: 2rem;
+            animation: flowerBloom 1s ease forwards;
+        }
+
+        @keyframes flowerBloom {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.5) rotate(180deg);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1) rotate(360deg);
+                opacity: 1;
+            }
+        }
+
+        .close-celebration {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            margin-top: 15px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        /* Export Button */
+        .export-section {
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        .export-btn {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .export-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+
+        /* Responsive */
+        @media (max-width: 400px) {
+            .garden-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🏃 运动时间记录</h1>
+            <p>每周目标：150分钟</p>
+        </header>
+
+        <section class="progress-section">
+            <div class="week-range" id="weekRange"></div>
+            <div class="progress-ring-container">
+                <svg class="progress-ring" width="220" height="220">
+                    <defs>
+                        <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#FF6B35"/>
+                            <stop offset="100%" style="stop-color:#F7931E"/>
+                        </linearGradient>
+                        <linearGradient id="successGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#28a745"/>
+                            <stop offset="100%" style="stop-color:#20c997"/>
+                        </linearGradient>
+                    </defs>
+                    <circle class="progress-ring-bg" cx="110" cy="110" r="100"/>
+                    <circle class="progress-ring-fill" id="progressRing" cx="110" cy="110" r="100"/>
+                </svg>
+                <div class="progress-text">
+                    <div class="progress-minutes" id="progressMinutes">0</div>
+                    <div class="progress-label">分钟</div>
+                </div>
+            </div>
+            <div class="progress-goal">目标: 150 分钟</div>
+            <div style="margin-top: 20px;">
+                <button class="add-btn" onclick="openModal()">+ 记录运动</button>
+            </div>
+        </section>
+
+        <section class="records-section">
+            <h2 class="section-title">
+                <span>📋</span>
+                本周运动明细
+            </h2>
+            <div class="record-list" id="recordList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📝</div>
+                    <p>还没有记录，开始运动吧！</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="garden-section">
+            <h2 class="garden-title">
+                <span>🌸</span>
+                我的运动花园
+            </h2>
+            <div class="garden-stats" id="gardenStats">
+                已达标 0 周，目标 52 周
+            </div>
+            <div class="garden-grid" id="gardenGrid"></div>
+        </section>
+
+        <section class="export-section">
+            <button class="export-btn" onclick="exportData()">📥 导出数据 (CSV)</button>
+        </section>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modal" onclick="closeModalOnOverlay(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <h3 class="modal-title">记录运动</h3>
+            <form id="exerciseForm" onsubmit="saveRecord(event)">
+                <div class="form-group">
+                    <label class="form-label">运动类型</label>
+                    <div class="type-grid">
+                        <label class="type-option-wrapper">
+                            <input type="radio" name="type" value="骑车" class="type-option" required>
+                            <span class="type-label">
+                                <span class="type-icon">🚴</span>
+                                <span class="type-name">骑车</span>
+                            </span>
+                        </label>
+                        <label class="type-option-wrapper">
+                            <input type="radio" name="type" value="游泳" class="type-option">
+                            <span class="type-label">
+                                <span class="type-icon">🏊</span>
+                                <span class="type-name">游泳</span>
+                            </span>
+                        </label>
+                        <label class="type-option-wrapper">
+                            <input type="radio" name="type" value="力量" class="type-option">
+                            <span class="type-label">
+                                <span class="type-icon">💪</span>
+                                <span class="type-name">力量</span>
+                            </span>
+                        </label>
+                        <label class="type-option-wrapper">
+                            <input type="radio" name="type" value="其他" class="type-option">
+                            <span class="type-label">
+                                <span class="type-icon">🏃</span>
+                                <span class="type-name">其他</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">运动时长（分钟）</label>
+                    <input type="number" name="minutes" class="minutes-input"
+                           placeholder="30" min="1" max="300" required>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Celebration -->
+    <div class="celebration" id="celebration">
+        <div class="celebration-message">
+            <h2>🎉 恭喜！</h2>
+            <p>本周目标已达成！<br>你在本周运动了 <span id="celebrationMinutes"></span> 分钟</p>
+            <button class="close-celebration" onclick="closeCelebration()">太棒了！</button>
+        </div>
+    </div>
+
+    <script>
+        // 数据存储键
+        const STORAGE_KEY = 'fitness_tracker_data';
+        const GOAL_MINUTES = 150;
+        const FLOWERS = ['🌸', '🌺', '🌻', '🌷', '🌹', '🌼', '🌵', '🌿', '🌱', '🍀'];
+
+        // 运动类型图标映射
+        const TYPE_ICONS = {
+            '骑车': '🚴',
+            '游泳': '🏊',
+            '力量': '💪',
+            '其他': '🏃'
+        };
+
+        // 初始化
+        function init() {
+            loadData();
+            updateUI();
+            initGarden();
+            checkNewWeek();
+        }
+
+        // 获取当前周标识符 (YYYY-WXX)
+        function getCurrentWeekKey() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const week = getWeekNumber(now);
+            return `${year}-W${String(week).padStart(2, '0')}`;
+        }
+
+        // 获取日期所在周数
+        function getWeekNumber(date) {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        }
+
+        // 获取本周日期范围
+        function getWeekRange() {
+            const now = new Date();
+            const dayOfWeek = now.getDay() || 7;
+            const monday = new Date(now);
+            monday.setDate(now.getDate() - dayOfWeek + 1);
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
+
+            const format = (d) => `${d.getMonth() + 1}/${d.getDate()}`;
+            return `${format(monday)} - ${format(sunday)}`;
+        }
+
+        // 检查是否是新的一周
+        function checkNewWeek() {
+            const data = getData();
+            const currentWeek = getCurrentWeekKey();
+
+            if (data.currentWeek !== currentWeek) {
+                // 新的一周开始了
+                if (data.currentWeek && data.weeklyMinutes >= GOAL_MINUTES) {
+                    // 上周达标，添加到花园
+                    if (!data.completedWeeks.includes(data.currentWeek)) {
+                        data.completedWeeks.push(data.currentWeek);
+                    }
+                }
+
+                // 重置本周数据
+                data.currentWeek = currentWeek;
+                data.weeklyMinutes = 0;
+                data.records = data.records.filter(r => r.weekKey === currentWeek);
+
+                saveData(data);
+                updateUI();
+                initGarden();
+            }
+        }
+
+        // 获取数据
+        function getData() {
+            const defaultData = {
+                records: [],
+                completedWeeks: [],
+                currentWeek: getCurrentWeekKey(),
+                weeklyMinutes: 0,
+                hasCelebrated: false
+            };
+
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                return saved ? { ...defaultData, ...JSON.parse(saved) } : defaultData;
+            } catch (e) {
+                return defaultData;
+            }
+        }
+
+        // 保存数据
+        function saveData(data) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        // 加载数据
+        function loadData() {
+            // 数据会在 getData 中自动加载
+        }
+
+        // 更新UI
+        function updateUI() {
+            const data = getData();
+            const currentWeekKey = getCurrentWeekKey();
+
+            // 更新周范围显示
+            document.getElementById('weekRange').textContent = `本周: ${getWeekRange()}`;
+
+            // 计算本周总时间
+            let weeklyTotal = 0;
+            data.records.forEach(record => {
+                if (record.weekKey === currentWeekKey) {
+                    weeklyTotal += parseInt(record.minutes);
+                }
+            });
+
+            // 更新进度圆环
+            const progressRing = document.getElementById('progressRing');
+            const progressMinutes = document.getElementById('progressMinutes');
+            const circumference = 2 * Math.PI * 100;
+            const progress = Math.min(weeklyTotal / GOAL_MINUTES, 1);
+            const offset = circumference - (progress * circumference);
+
+            progressRing.style.strokeDashoffset = offset;
+            progressMinutes.textContent = weeklyTotal;
+
+            // 如果达标，改变颜色
+            if (weeklyTotal >= GOAL_MINUTES) {
+                progressRing.classList.add('over-goal');
+                progressMinutes.classList.add('over-goal');
+            } else {
+                progressRing.classList.remove('over-goal');
+                progressMinutes.classList.remove('over-goal');
+            }
+
+            // 更新记录列表
+            updateRecordList(data.records, currentWeekKey);
+
+            // 检查是否需要庆祝
+            if (weeklyTotal >= GOAL_MINUTES && !data.hasCelebrated) {
+                showCelebration(weeklyTotal);
+                data.hasCelebrated = true;
+
+                // 添加到花园
+                if (!data.completedWeeks.includes(currentWeekKey)) {
+                    data.completedWeeks.push(currentWeekKey);
+                }
+
+                saveData(data);
+                initGarden();
+            }
+        }
+
+        // 更新记录列表
+        function updateRecordList(records, currentWeekKey) {
+            const listEl = document.getElementById('recordList');
+            const weekRecords = records
+                .filter(r => r.weekKey === currentWeekKey)
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (weekRecords.length === 0) {
+                listEl.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <p>还没有记录，开始运动吧！</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const dayNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+
+            listEl.innerHTML = weekRecords.map(record => {
+                const date = new Date(record.date);
+                const dayName = dayNames[date.getDay()];
+                const timeStr = `${date.getMonth() + 1}月${date.getDate()}日 ${dayName}`;
+
+                return `
+                    <div class="record-item">
+                        <div class="record-info">
+                            <div class="record-icon">${TYPE_ICONS[record.type] || '🏃'}</div>
+                            <div class="record-details">
+                                <span class="record-type">${record.type}</span>
+                                <span class="record-date">${timeStr}</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span class="record-minutes">${record.minutes} min</span>
+                            <button class="delete-btn" onclick="deleteRecord('${record.id}')">删除</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 初始化花园
+        function initGarden() {
+            const data = getData();
+            const gridEl = document.getElementById('gardenGrid');
+            const statsEl = document.getElementById('gardenStats');
+
+            const completedCount = data.completedWeeks.length;
+            statsEl.textContent = `已达标 ${completedCount} 周，目标 52 周`;
+
+            // 创建52个格子（一年的周数）
+            let html = '';
+            for (let i = 0; i < 52; i++) {
+                if (i < completedCount) {
+                    const flower = FLOWERS[i % FLOWERS.length];
+                    html += `<div class="garden-slot flower">${flower}</div>`;
+                } else {
+                    html += `<div class="garden-slot">🌱</div>`;
+                }
+            }
+            gridEl.innerHTML = html;
+        }
+
+        // 打开模态框
+        function openModal() {
+            document.getElementById('modal').classList.add('active');
+            document.querySelector('input[name="minutes"]').focus();
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+            document.getElementById('exerciseForm').reset();
+        }
+
+        // 点击遮罩关闭
+        function closeModalOnOverlay(event) {
+            if (event.target === event.currentTarget) {
+                closeModal();
+            }
+        }
+
+        // 保存记录
+        function saveRecord(event) {
+            event.preventDefault();
+
+            const formData = new FormData(event.target);
+            const type = formData.get('type');
+            const minutes = parseInt(formData.get('minutes'));
+
+            const data = getData();
+            const record = {
+                id: Date.now().toString(),
+                date: new Date().toISOString(),
+                type,
+                minutes,
+                weekKey: getCurrentWeekKey()
+            };
+
+            data.records.push(record);
+            saveData(data);
+
+            closeModal();
+            updateUI();
+        }
+
+        // 删除记录
+        function deleteRecord(id) {
+            if (!confirm('确定要删除这条记录吗？')) return;
+
+            const data = getData();
+            data.records = data.records.filter(r => r.id !== id);
+
+            // 重置庆祝状态，以便重新计算
+            data.hasCelebrated = false;
+
+            saveData(data);
+            updateUI();
+        }
+
+        // 显示庆祝动画
+        function showCelebration(minutes) {
+            const celebration = document.getElementById('celebration');
+            document.getElementById('celebrationMinutes').textContent = minutes;
+            celebration.classList.add('active');
+
+            // 创建鲜花盛开动画
+            createFlowerAnimation();
+        }
+
+        // 创建鲜花动画
+        function createFlowerAnimation() {
+            const celebration = document.getElementById('celebration');
+            const colors = ['#FF6B35', '#F7931E', '#FFD93D', '#6BCB77', '#4D96FF', '#FF6B9D'];
+
+            // 清除之前的鲜花
+            celebration.querySelectorAll('.flower').forEach(f => f.remove());
+
+            // 创建新鲜花
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const flower = document.createElement('div');
+                    flower.className = 'flower';
+                    flower.textContent = FLOWERS[Math.floor(Math.random() * FLOWERS.length)];
+                    flower.style.left = Math.random() * 100 + '%';
+                    flower.style.top = Math.random() * 100 + '%';
+                    flower.style.color = colors[Math.floor(Math.random() * colors.length)];
+                    flower.style.fontSize = (1.5 + Math.random() * 2) + 'rem';
+                    celebration.appendChild(flower);
+
+                    // 动画结束后移除
+                    setTimeout(() => flower.remove(), 2000);
+                }, i * 50);
+            }
+        }
+
+        // 关闭庆祝
+        function closeCelebration() {
+            document.getElementById('celebration').classList.remove('active');
+        }
+
+        // 导出数据
+        function exportData() {
+            const data = getData();
+
+            // 创建 CSV 内容
+            let csv = '日期,星期,运动类型,时长(分钟),周次\n';
+
+            const dayNames = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+
+            // 按日期排序
+            const sortedRecords = [...data.records].sort((a, b) =>
+                new Date(a.date) - new Date(b.date)
+            );
+
+            sortedRecords.forEach(record => {
+                const date = new Date(record.date);
+                const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                const dayName = dayNames[date.getDay()];
+                csv += `${dateStr},${dayName},${record.type},${record.minutes},${record.weekKey}\n`;
+            });
+
+            // 添加达标周统计
+            csv += '\n达标周统计\n';
+            csv += '周次,状态\n';
+            data.completedWeeks.forEach(week => {
+                csv += `${week},已达标\n`;
+            });
+
+            // 下载文件
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `运动记录_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', init);
+
+        // 每分钟检查一次是否是新的一周
+        setInterval(checkNewWeek, 60000);
+
+        // 注册 Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(reg => console.log('Service Worker 注册成功'))
+                .catch(err => console.log('Service Worker 注册失败:', err));
+        }
+    </script>
+</body>
+</html>
