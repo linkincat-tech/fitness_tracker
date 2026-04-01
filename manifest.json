@@ -1,0 +1,33 @@
+{
+  "name": "运动时间记录",
+  "short_name": "运动记录",
+  "description": "每周运动150分钟目标追踪器，记录你的运动时光",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f8f9fa",
+  "theme_color": "#FF6B35",
+  "orientation": "portrait",
+  "scope": ".",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%23FF6B35' width='192' height='192' rx='30'/%3E%3Ctext x='96' y='125' font-size='100' text-anchor='middle' fill='white'%3E%F0%9F%8F%83%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect fill='%23FF6B35' width='512' height='512' rx='60'/%3E%3Ctext x='256' y='340' font-size='280' text-anchor='middle' fill='white'%3E%F0%9F%8F%83%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["health", "fitness", "lifestyle"],
+  "screenshots": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='390' height='844'%3E%3Crect fill='%23f8f9fa' width='390' height='844'/%3E%3Crect x='20' y='100' width='350' height='200' rx='20' fill='%23FF6B35'/%3E%3Ctext x='195' y='200' font-size='40' text-anchor='middle' fill='white'%3E运动记录%3C/text%3E%3C/svg%3E",
+      "sizes": "390x844",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    }
+  ]
+}
