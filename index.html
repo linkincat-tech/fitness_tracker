@@ -919,10 +919,22 @@
             const completedCount = data.completedWeeks.length;
             statsEl.textContent = `已达标 ${completedCount} 周，目标 52 周`;
 
+            // 解析已达标周的索引（从周标识符如 "2024-W05" 中提取周数）
+            const completedWeekIndices = new Set();
+            data.completedWeeks.forEach(weekKey => {
+                const match = weekKey.match(/-W(\d+)$/);
+                if (match) {
+                    const weekNum = parseInt(match[1], 10);
+                    if (weekNum >= 1 && weekNum <= 52) {
+                        completedWeekIndices.add(weekNum - 1); // 转换为 0-based 索引
+                    }
+                }
+            });
+
             // 创建52个格子（一年的周数）
             let html = '';
             for (let i = 0; i < 52; i++) {
-                if (i < completedCount) {
+                if (completedWeekIndices.has(i)) {
                     const flower = FLOWERS[i % FLOWERS.length];
                     html += `<div class="garden-slot flower">${flower}</div>`;
                 } else {
