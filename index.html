@@ -262,31 +262,31 @@
             margin-bottom: 10px;
         }
 
-        /* Garden Section */
-        .garden-section {
-            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        /* Calendar Section */
+        .calendar-section {
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
             border-radius: 20px;
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
         }
 
-        .garden-title {
+        .calendar-title {
             font-size: 1.1rem;
-            color: #2e7d32;
+            color: #333;
             margin-bottom: 15px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .garden-stats {
+        .calendar-stats {
             font-size: 0.85rem;
-            color: #558b2f;
+            color: #666;
             margin-bottom: 15px;
         }
 
-        .garden-grid {
+        .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 8px;
@@ -295,29 +295,27 @@
             border-radius: 15px;
         }
 
-        .garden-slot {
+        .calendar-slot {
             aspect-ratio: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 0.9rem;
+            color: #666;
             background: rgba(255,255,255,0.7);
             border-radius: 10px;
             transition: transform 0.3s;
         }
 
-        .garden-slot.flower {
-            animation: bloom 0.5s ease;
+        .calendar-slot.completed {
+            color: #dc3545;
+            font-weight: bold;
+            background: rgba(220, 53, 69, 0.1);
+            border: 2px solid #dc3545;
         }
 
-        .garden-slot:hover {
+        .calendar-slot:hover {
             transform: scale(1.1);
-        }
-
-        @keyframes bloom {
-            0% { transform: scale(0) rotate(0deg); }
-            50% { transform: scale(1.2) rotate(180deg); }
-            100% { transform: scale(1) rotate(360deg); }
         }
 
         /* Modal */
@@ -580,7 +578,7 @@
 
         /* Responsive */
         @media (max-width: 400px) {
-            .garden-grid {
+            .calendar-grid {
                 grid-template-columns: repeat(5, 1fr);
             }
         }
@@ -634,15 +632,15 @@
             </div>
         </section>
 
-        <section class="garden-section">
-            <h2 class="garden-title">
-                <span>🌸</span>
-                我的运动花园
+        <section class="calendar-section">
+            <h2 class="calendar-title">
+                <span>📅</span>
+                运动周历
             </h2>
-            <div class="garden-stats" id="gardenStats">
+            <div class="calendar-stats" id="calendarStats">
                 已达标 0 周，目标 52 周
             </div>
-            <div class="garden-grid" id="gardenGrid"></div>
+            <div class="calendar-grid" id="calendarGrid"></div>
         </section>
 
         <section class="export-section">
@@ -728,7 +726,7 @@
         function init() {
             loadData();
             updateUI();
-            initGarden();
+            initCalendar();
             checkNewWeek();
         }
 
@@ -783,7 +781,7 @@
 
                 saveData(data);
                 updateUI();
-                initGarden();
+                initCalendar();
             }
         }
 
@@ -864,7 +862,7 @@
                 }
 
                 saveData(data);
-                initGarden();
+                initCalendar();
             }
         }
 
@@ -910,11 +908,11 @@
             }).join('');
         }
 
-        // 初始化花园
-        function initGarden() {
+        // 初始化周历
+        function initCalendar() {
             const data = getData();
-            const gridEl = document.getElementById('gardenGrid');
-            const statsEl = document.getElementById('gardenStats');
+            const gridEl = document.getElementById('calendarGrid');
+            const statsEl = document.getElementById('calendarStats');
 
             const completedCount = data.completedWeeks.length;
             statsEl.textContent = `已达标 ${completedCount} 周，目标 52 周`;
@@ -931,14 +929,14 @@
                 }
             });
 
-            // 创建52个格子（一年的周数）
+            // 创建52个格子（一年的周数），显示周数数字
             let html = '';
             for (let i = 0; i < 52; i++) {
+                const weekNum = i + 1;
                 if (completedWeekIndices.has(i)) {
-                    const flower = FLOWERS[i % FLOWERS.length];
-                    html += `<div class="garden-slot flower">${flower}</div>`;
+                    html += `<div class="calendar-slot completed">${weekNum}</div>`;
                 } else {
-                    html += `<div class="garden-slot">🌱</div>`;
+                    html += `<div class="calendar-slot">${weekNum}</div>`;
                 }
             }
             gridEl.innerHTML = html;
