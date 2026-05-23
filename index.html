@@ -778,6 +778,7 @@
                 data.currentWeek = currentWeek;
                 data.weeklyMinutes = 0;
                 data.records = data.records.filter(r => r.weekKey === currentWeek);
+                data.hasCelebrated = false;
 
                 saveData(data);
                 updateUI();
