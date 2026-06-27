@@ -733,8 +733,12 @@
         // 获取当前周标识符 (YYYY-WXX)
         function getCurrentWeekKey() {
             const now = new Date();
-            const year = now.getFullYear();
             const week = getWeekNumber(now);
+            // 使用UTC年份确保与getWeekNumber一致
+            const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const year = d.getUTCFullYear();
             return `${year}-W${String(week).padStart(2, '0')}`;
         }
 
